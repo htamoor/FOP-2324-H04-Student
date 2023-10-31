@@ -1,54 +1,34 @@
+import org.sourcegrade.jagr.gradle.task.grader.GraderRunTask
+
 plugins {
-    java
-    application
-    alias(libs.plugins.style)
-    alias(libs.plugins.jagr.gradle)
+    alias(libs.plugins.algomate)
 }
 
-version = file("version").readLines().first()
-
-jagr {
+exercise {
     assignmentId.set("h04")
-    submissions {
-        val main by creating {
-            // ACHTUNG!
-            // Setzen Sie im folgenden Bereich Ihre TU-ID (NICHT Ihre Matrikelnummer!), Ihren Nachnamen und Ihren Vornamen
-            // in Anführungszeichen (z.B. "ab12cdef" für Ihre TU-ID) ein!
-            // studentId.set("")
-            // firstName.set("")
-            // lastName.set("")
-        }
-    }
+}
+
+submission {
+    // ACHTUNG!
+    // Setzen Sie im folgenden Bereich Ihre TU-ID (NICHT Ihre Matrikelnummer!), Ihren Nachnamen und Ihren Vornamen
+    // in Anführungszeichen (z.B. "ab12cdef" für Ihre TU-ID) ein!
+    studentId = null
+    firstName = null
+    lastName = null
+
+    // Optionally require own tests for mainBuildSubmission task. Default is false
+    requireTests = false
 }
 
 dependencies {
-    implementation(libs.annotations)
-    implementation(libs.algoutils.student)
-    testImplementation(libs.junit.core)
-}
-
-application {
-    mainClass.set("h04.Main")
+    // libs.fopbot method generated from ./gradle/libs.versions.toml
+    implementation(libs.fopbot)
 }
 
 tasks {
-    val runDir = File("build/run")
-    withType<JavaExec> {
+    withType<GraderRunTask> {
         doFirst {
-            runDir.mkdirs()
+            throw GradleException("No public tests are provided for this exercise! For more information go to https://moodle.informatik.tu-darmstadt.de/mod/page/view.php?id=60388")
         }
-        workingDir = runDir
-    }
-    test {
-        doFirst {
-            runDir.mkdirs()
-        }
-        workingDir = runDir
-        useJUnitPlatform()
-    }
-    withType<JavaCompile> {
-        options.encoding = "UTF-8"
-        sourceCompatibility = "17"
-        targetCompatibility = "17"
     }
 }
