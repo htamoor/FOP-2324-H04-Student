@@ -1,5 +1,7 @@
 package h04;
 
+import fopbot.World;
+
 import static org.tudalgo.algoutils.student.Student.crash;
 
 /**
@@ -12,7 +14,7 @@ public class Main {
      * @param args program arguments, currently ignored
      */
     public static void main(String[] args) {
-        System.out.println("Hello World!");
+        World.setVisible(true);
 //        main01();
 //        main02();
     }
