@@ -9,9 +9,8 @@ import java.awt.*;
 
 public class KeyboardFieldSelector implements FieldSelector, KeyPressListener {
 
-    private FieldSelectionListener listener; // FieldSelectionListener-Objekt
-    private boolean firstKeyPress = true; // Flag, um zu prüfen, ob dies der erste Tastendruck ist
-    private Field markedField; // Das aktuell markierte Feld
+    private FieldSelectionListener listener;
+    private Field markedField;
 
     @Override
     public void setFieldSelectionListener(FieldSelectionListener listener) {
@@ -20,63 +19,50 @@ public class KeyboardFieldSelector implements FieldSelector, KeyPressListener {
 
     @Override
     public void onKeyPress(KeyPressEvent event) {
-        if (firstKeyPress) { // Wenn dies der erste Tastendruck ist
-            markedField = event.getWorld().getField(0, 0); // Markiere das Feld an (0,0)
-            markedField.setFieldColor(Color.RED); // Setze die Farbe des markierten Feldes auf Rot
-            firstKeyPress = false; // Setze das Flag auf false
-        } else {
-            int x = markedField.getX(); // X-Koordinate des markierten Feldes
-            int y = markedField.getY(); // Y-Koordinate des markierten Feldes
-
-            // Wenn der gedrückte Schlüssel einer der Pfeiltasten entspricht
-            if (event.getKey() == Key.UP || event.getKey() == Key.LEFT ||
-                event.getKey() == Key.DOWN || event.getKey() == Key.RIGHT) {
-                // Entmarkiere das bisherige Feld
-                markedField.setFieldColor(null);
-
-                // Bewege die Markierung entsprechend der Richtung der gedrückten Taste
-                switch (event.getKey()) {
-                    case UP:
-                        y--;
-                        break;
-                    case LEFT:
-                        x--;
-                        break;
-                    case DOWN:
-                        y++;
-                        break;
-                    case RIGHT:
-                        x++;
-                        break;
-                }
-
-                // Überprüfen, ob das neue Feld gültig ist
-                Field newField = event.getWorld().getField(x, y);
-                if (newField == null) { // Wenn kein weiteres Feld in die gewünschte Richtung vorhanden ist
-                    // Gehe zur letzten Position in die entgegengesetzte Richtung
-                    switch (event.getKey()) {
-                        case UP:
-                            y++;
-                            break;
-                        case LEFT:
-                            x++;
-                            break;
-                        case DOWN:
-                            y--;
-                            break;
-                        case RIGHT:
-                            x--;
-                            break;
-                    }
-                }
-
-                // Markiere das neue Feld
-                markedField = event.getWorld().getField(x, y);
-                markedField.setFieldColor(Color.RED);
-            } else if (event.getKey() == Key.SPACE) { // Wenn die Leertaste gedrückt wurde
-                // Rufe die Methode onFieldSelection des FieldSelectionListeners auf
-                listener.onFieldSelection(markedField);
-            }
+        var world = event.getWorld();
+        var key = event.getKey();
+        if (markedField == null) {
+            markedField = world.getField(0, 0);
+            markedField.setFieldColor(Color.RED);
+            return;
         }
+        if (key != Key.LEFT && key != Key.RIGHT && key != Key.UP && key != Key.DOWN && key != Key.SPACE) {
+            return;
+        }
+        int dX = key == Key.LEFT ? -1 : key == Key.RIGHT ? 1 : 0;
+        int dY = key == Key.UP ? 1 : key == Key.DOWN ? -1 : 0;
+
+        int w = world.getWidth();
+        int h = world.getHeight();
+
+        int x = markedField.getX();
+        int y = markedField.getY();
+
+        // Update x and y based on the direction
+        x = Math.floorMod(x + dX, w);
+        y = Math.floorMod(y + dY, h);
+
+        // Get the field in the new position
+        Field newField = world.getField(x, y);
+
+        // If newField is null, stay in the current position
+        if (newField == null) {
+            return;
+        }
+
+        // Unmark the previous field
+        markedField.setFieldColor(null);
+
+        // Mark the new field
+        newField.setFieldColor(Color.RED);
+
+        // If space is pressed, call onFieldSelection
+        if (key == Key.SPACE) {
+            listener.onFieldSelection(newField);
+        }
+
+        // Update markedField
+        markedField = newField;
     }
 }
+
